@@ -1,0 +1,63 @@
+Pour envoyer des SMS avec Firebase dans votre application Web (JavaScript/TypeScript), vous disposez de deux approches principales selon votre besoin :
+
+1. Pour l'authentification (Vérification de numéro de téléphone)
+
+Si votre objectif est de permettre à vos utilisateurs de s'inscrire ou de se connecter par SMS, vous devez utiliser Firebase Authentication. C'est la solution native de Firebase pour l'envoi de SMS de validation.
+
+Voici un exemple simple d'implémentation en JavaScript :
+
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "firebase/auth";
+
+const auth = getAuth();
+
+// Configurer le reCAPTCHA requis pour l'envoi du SMS
+const recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+  'size': 'normal'
+});
+
+const phoneNumber = "+2250710922213"; // Format international
+
+signInWithPhoneNumber(auth, phoneNumber, recaptchaVerifier)
+    .then((confirmationResult) => {
+      // SMS envoyé avec succès. Demandez le code reçu à l'utilisateur.
+      const code = prompt("Entrez le code reçu par SMS :");
+      return confirmationResult.confirm(code);
+    })
+    .then((result) => {
+      // Utilisateur connecté avec succès
+      console.log("Utilisateur connecté :", result.user);
+    })
+    .catch((error) => {
+      console.error("Erreur lors de l'envoi du SMS :", error);
+    });
+
+    2. Pour l'envoi de SMS personnalisés (Alertes, notifications)
+
+Firebase ne propose pas d'API directe pour envoyer des SMS personnalisés arbitraires. Pour cela, vous devez passer par un fournisseur tiers (comme Twilio, Plivo ou Vonage) de l'une des manières suivantes :
+
+Firebase Extensions : Vous pouvez utiliser l'extension officielle "Send Messages with Twilio". Une fois installée, elle écoute une collection spécifique dans votre base de données Cloud Firestore et envoie un SMS automatiquement dès qu'un nouveau document y est ajouté.
+
+Cloud Functions pour Firebase : Vous pouvez créer une fonction d'arrière-plan en TypeScript qui appelle l'API HTTP du fournisseur de SMS de votre choix lorsque vous en avez besoin.
+
+Note importante pour votre projet : Votre projet prierebethesda utilise actuellement le forfait de facturation Spark (qui est une offre sans coût). Pour installer des extensions Firebase ou pour que vos Cloud Functions puissent communiquer avec des API externes (comme Twilio), vous devrez mettre à niveau votre projet vers le forfait Blaze (facturation à l'usage).
+
+
+    Oui, il existe une extension officielle appelée Send Messages with Twilio conçue pour simplifier l'envoi de SMS (et de messages WhatsApp).
+
+Comment elle fonctionne
+
+Une fois installée et configurée, cette extension surveille une collection Cloud Firestore spécifique. Lorsque vous y ajoutez un nouveau document contenant le numéro du destinataire (to) et le contenu du message (body), l'extension se charge automatiquement d'envoyer le SMS en appelant l'API de Twilio.
+
+Éléments essentiels à prendre en compte pour votre projet :
+
+Plan de facturation : Votre projet prierebethesda utilise actuellement le forfait Spark (qui est une offre sans coût). L'installation d'extensions requiert l'activation de certains services Google Cloud (comme Secret Manager), ce qui vous obligera à faire passer votre projet au forfait Blaze (facturation à l'usage).
+
+Compte tiers requis : L'extension ne fournit pas les SMS d'elle-même. Vous devez posséder un compte Twilio actif, un numéro de téléphone Twilio valide et vos identifiants de sécurité (Account SID et Auth Token) pour la configuration.
+
+Fermeture du service Firebase Extensions : C'est un point très important à anticiper : le service Firebase Extensions s'arrêtera le 31 mars 2027. Bien que les extensions déjà installées continueront de fonctionner, vous ne pourrez plus gérer ou installer de nouvelles extensions après cette date.
+
+Notre recommandation pour votre projet (JS/TS) :
+
+En raison de la fermeture programmée du service d'extensions en 2027, nous vous conseillons de ne pas baser votre architecture à long terme sur cette extension.
+
+La solution la plus pérenne et sécurisée pour votre application Web consiste à créer votre propre intégration d'envoi en écrivant une Cloud Function en TypeScript ou JavaScript. Vous pourrez y importer directement le SDK officiel de Twilio (ou de tout autre fournisseur de SMS de votre choix) et l'appeler de manière sécurisée depuis votre code client.
