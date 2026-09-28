@@ -205,10 +205,10 @@ export default function PrintableFormModal({ request, onClose, token }) {
                   EGLISE METHODISTE DE COTE D’IVOIRE
                 </div>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>
-                  DISTRICT DE YOPOUGON – CIRCUIT NIANGON
+                  DISTRICT DE YOPOUGON – CIRCUIT DE NIANGON
                 </div>
                 <div style={{ fontWeight: 800, fontSize: '1.2rem', color: '#107C41' }}>
-                  TEMPLE BETHESDA
+                  TEMPLE BÉTHESDA
                 </div>
               </div>
             </div>

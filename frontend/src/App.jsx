@@ -71,9 +71,10 @@ function MainApp() {
           <div style={{ fontWeight: 700, color: '#107C41', fontSize: '1rem', marginBottom: '0.25rem' }}>
             Église Méthodiste de Côte d'Ivoire
           </div>
-          <div>District de Yopougon – Circuit Niangon • Temple Bethesda de Yopougon Niangon Sud</div>
+          <div>District de Yopougon • Circuit de Niangon</div>
+          <div>Temple Béthesda de Yopougon Niangon Sud</div>
           <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#94A3B8' }}>
-            © 2026 Temple Bethesda. Tous droits réservés.
+            © 2026 Temple Béthesda. Tous droits réservés.
           </div>
         </div>
       </footer>

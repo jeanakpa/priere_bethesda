@@ -8,15 +8,15 @@ from models.user import User
 from models.request import PrayerRequest
 from utils.helpers import generate_tracking_code
 
-DB_NAME = "priere_bethesda"
+DB_NAME = os.getenv("POSTGRES_DB", "priere_bethesda")
 PG_USER = os.getenv("POSTGRES_USER", "postgres")
-PG_PASS = os.getenv("POSTGRES_PASSWORD", "postgres")
+PG_PASS = os.getenv("POSTGRES_PASSWORD", "postgre")
 PG_HOST = os.getenv("POSTGRES_HOST", "localhost")
 PG_PORT = os.getenv("POSTGRES_PORT", "5432")
 
 def create_database_if_not_exists():
     print("Verification et creation de la base de donnees PostgreSQL...")
-    passwords_to_try = [PG_PASS, "", "postgres", "admin", "root"]
+    passwords_to_try = [PG_PASS, "postgre", "postgres", "", "admin", "root"]
     conn = None
     
     for pwd in passwords_to_try:
@@ -102,7 +102,7 @@ def init_tables_and_seed():
 
         # 3. Seed Conducteurs for all classes
         conducteurs_list = [
-            ("grahadjorose", "Grah Adjo Rose", "BÉTHEL"),
+            ("grahadjo", "Grah Adjo Rose", "BÉTHEL"),
             ("dezamadeleine", "Deza Madeleine / Mamikre Pierre", "BETHLEEM"),
             ("adoueupfrasie", "Adou Euphrasie / Seka Gérard", "BÉNÉDICTION"),
             ("yandemonique", "Yandé Monique", "CANAAN"),
@@ -219,4 +219,4 @@ def init_tables_and_seed():
 if __name__ == "__main__":
     if create_database_if_not_exists():
         init_tables_and_seed()
-        print("Initialisation terminée avec succès !")
+        print("Initialisation PostgreSQL terminée avec succès !")

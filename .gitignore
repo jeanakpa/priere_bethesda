@@ -13,6 +13,13 @@ backend/.venv/
 backend/uploads/
 backend/instance/
 
+# Python & Backend
+*.db
+.env
+backend/.env
+backend/storage/uploads/*
+!backend/storage/uploads/.gitkeep
+
 # IDE & OS
 .vscode/
 .idea/

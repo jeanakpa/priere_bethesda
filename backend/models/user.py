@@ -19,6 +19,8 @@ class User(db.Model):
     otp_attempts = db.Column(db.Integer, default=0)
     otp_blocked_until = db.Column(db.DateTime, nullable=True)
 
+    must_change_password = db.Column(db.Boolean, default=True)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
@@ -28,6 +30,10 @@ class User(db.Model):
         return check_password_hash(self.password_hash, password)
 
     def to_dict(self):
+        is_default_pass = self.check_password('123456')
+        must_change = getattr(self, 'must_change_password', True)
+        if must_change is None:
+            must_change = True
         return {
             'id': self.id,
             'username': self.username,
@@ -35,6 +41,7 @@ class User(db.Model):
             'role': self.role,
             'methode_classe': self.methode_classe,
             'phone_number': self.phone_number,
+            'must_change_password': must_change or is_default_pass,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
 

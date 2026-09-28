@@ -299,7 +299,7 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
             </h2>
 
             <p style={{ color: '#64748B', marginBottom: '2rem' }}>
-              Votre fiche de prière/événement a été enregistrée avec succès auprès du Temple Bethesda.
+              Votre fiche de prière/événement a été enregistrée avec succès auprès du Temple Béthesda.
             </p>
 
             {/* Tracking Code Highlight Box */}
@@ -387,7 +387,7 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
           
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>Remplir une Fiche Officielle</h1>
-            <p style={{ color: '#64748B' }}>Numérisation de la Fiche de Prière du Temple Bethesda de Yopougon Niangon Sud</p>
+            <p style={{ color: '#64748B' }}>Demande de prière</p>
           </div>
 
           {/* Form Type Tabs */}
@@ -482,6 +482,28 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
             </button>
           </div>
 
+          {/* Conducteur Info Banner */}
+          {user && (
+            <div style={{
+              backgroundColor: '#E6F4EA',
+              border: '1.5px solid #A7F3D0',
+              borderRadius: '12px',
+              padding: '0.9rem 1.25rem',
+              marginBottom: '1.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              color: '#065F46',
+              fontWeight: 600,
+              fontSize: '0.92rem'
+            }}>
+              <div>👤 Nom du Conducteur : <strong>{user.full_name || user.username}</strong></div>
+              <div>⛪ Classe Méthodiste : <strong>{user.methode_classe || 'Non spécifiée'}</strong></div>
+            </div>
+          )}
+
           {/* Form Card */}
           <div className="card">
             
@@ -491,51 +513,89 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
               {activeForm === 'DEMANDE_PRIERE' && (
                 <div>
                   <h3 style={{ fontSize: '1.2rem', marginBottom: '1.25rem', color: '#107C41', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <HeartHandshake size={20} /> Formulaire de Demande de Prière
+                    <HeartHandshake size={20} />Demande de Prière
                   </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     
                     <div className="form-group">
-                      <label className="form-label">Date de la prière *</label>
+                      <label className="form-label">Date de la prière <span style={{ color: 'red' }}>*</span></label>
                       <input type="date" name="date_priere" className="form-control" value={formData.date_priere} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Demandeur (Nom & Prénoms) *</label>
-                      <input type="text" name="demandeur" placeholder="Ex: Sœur Kouassi Aminata" className="form-control" value={formData.demandeur} onChange={handleChange} required />
+                      <label className="form-label">Demandeur <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="demandeur" placeholder="M Kouassi George" className="form-control" value={formData.demandeur} onChange={handleChange} required />
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Classe Méthodiste *</label>
-                      <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
-                        <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
-                        {METHODIST_CLASSES.map((cls, idx) => (
-                          <option key={idx} value={cls.name}>{cls.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {user?.role !== 'conducteur' && (
+                      <>
+                        <div className="form-group">
+                          <label className="form-label">Classe Méthodiste <span style={{ color: 'red' }}>*</span></label>
+                          <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
+                            <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
+                            {METHODIST_CLASSES.map((cls, idx) => (
+                              <option key={idx} value={cls.name}>{cls.name}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Conducteur (trice) *</label>
-                      <input type="text" name="conducteur" placeholder="Conducteur (auto-rempli)" className="form-control" value={formData.conducteur} onChange={handleChange} required />
-                    </div>
+                        <div className="form-group">
+                          <label className="form-label">Conducteur (trice) <span style={{ color: 'red' }}>*</span></label>
+                          <input type="text" name="conducteur" placeholder="Conducteur (auto-rempli)" className="form-control" value={formData.conducteur} onChange={handleChange} required />
+                        </div>
+                      </>
+                    )}
 
                   </div>
 
-                  {/* Types de priere checkboxes */}
+                  {/* Types de priere Mobile Dropdown & Checkboxes */}
                   <div style={{ margin: '1.25rem 0', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                    <label className="form-label" style={{ marginBottom: '0.75rem' }}>Cochez le ou les types de prière souhaités :</label>
-                    <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, cursor: 'pointer' }}>
+                    <label className="form-label" style={{ marginBottom: '0.5rem' }}>Sélectionner le type de prière <span style={{ color: 'red' }}>*</span></label>
+                    
+                    <select 
+                      className="form-control"
+                      style={{ fontWeight: 600, color: '#107C41', marginBottom: '0.75rem' }}
+                      value={
+                        formData.priere_soutien && formData.priere_guerison && formData.priere_action_grace ? "TOUS" :
+                        formData.priere_soutien && formData.priere_guerison ? "SOUTIEN_GUERISON" :
+                        formData.priere_soutien && formData.priere_action_grace ? "SOUTIEN_GRACE" :
+                        formData.priere_guerison && formData.priere_action_grace ? "GUERISON_GRACE" :
+                        formData.priere_soutien ? "SOUTIEN" :
+                        formData.priere_guerison ? "GUERISON" :
+                        formData.priere_action_grace ? "ACTION_GRACE" : ""
+                      }
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          priere_soutien: val === 'SOUTIEN' || val === 'SOUTIEN_GUERISON' || val === 'SOUTIEN_GRACE' || val === 'TOUS',
+                          priere_guerison: val === 'GUERISON' || val === 'SOUTIEN_GUERISON' || val === 'GUERISON_GRACE' || val === 'TOUS',
+                          priere_action_grace: val === 'ACTION_GRACE' || val === 'SOUTIEN_GRACE' || val === 'GUERISON_GRACE' || val === 'TOUS',
+                        }));
+                      }}
+                      required
+                    >
+                      <option value="">-- Choisir le type de prière --</option>
+                      <option value="SOUTIEN">Prière de Soutien</option>
+                      <option value="GUERISON">Prière de Guérison</option>
+                      <option value="ACTION_GRACE">Prière d'Action de Grâce</option>
+                      <option value="SOUTIEN_GUERISON">Prière de Soutien & Guérison</option>
+                      <option value="SOUTIEN_GRACE">Prière de Soutien & Action de Grâce</option>
+                      <option value="GUERISON_GRACE">Prière de Guérison & Action de Grâce</option>
+                      <option value="TOUS">Toutes les prières (Soutien, Guérison, Action de Grâce)</option>
+                    </select>
+
+                    <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, cursor: 'pointer', fontSize: '0.88rem' }}>
                         <input type="checkbox" name="priere_soutien" checked={formData.priere_soutien} onChange={handleChange} style={{ width: '18px', height: '18px', accentColor: '#107C41' }} />
                         Prière de Soutien
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, cursor: 'pointer', fontSize: '0.88rem' }}>
                         <input type="checkbox" name="priere_guerison" checked={formData.priere_guerison} onChange={handleChange} style={{ width: '18px', height: '18px', accentColor: '#107C41' }} />
                         Prière de Guérison
                       </label>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, cursor: 'pointer' }}>
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 500, cursor: 'pointer', fontSize: '0.88rem' }}>
                         <input type="checkbox" name="priere_action_grace" checked={formData.priere_action_grace} onChange={handleChange} style={{ width: '18px', height: '18px', accentColor: '#107C41' }} />
                         Prière d'Action de Grâce
                       </label>
@@ -543,7 +603,7 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Sujet de prière détaillé *</label>
+                    <label className="form-label">Sujet de prière détaillé <span style={{ color: 'red' }}>*</span></label>
                     <textarea name="sujet" rows="4" placeholder="Exprimez votre sujet de prière..." className="form-control" value={formData.sujet} onChange={handleChange} required />
                   </div>
 
@@ -554,71 +614,83 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
               {activeForm === 'NECROLOGIE' && (
                 <div>
                   <h3 style={{ fontSize: '1.2rem', marginBottom: '1.25rem', color: '#D97706', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <FileText size={20} /> Formulaire de Nécrologie & Obsèques
+                    <FileText size={20} />Nécrologie
                   </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     
                     <div className="form-group">
-                      <label className="form-label">La Famille *</label>
-                      <input type="text" name="famille" placeholder="Ex: La Famille Yao à Niangon" className="form-control" value={formData.famille} onChange={handleChange} required />
+                      <label className="form-label">La Famille <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="famille" placeholder="Famille Aboua" className="form-control" value={formData.famille} onChange={handleChange} required />
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label">La Classe Méthodiste *</label>
-                      <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
-                        <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
-                        {METHODIST_CLASSES.map((cls, idx) => (
-                          <option key={idx} value={cls.name}>{cls.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {user?.role !== 'conducteur' && (
+                      <div className="form-group">
+                        <label className="form-label">La Classe Méthodiste <span style={{ color: 'red' }}>*</span></label>
+                        <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
+                          <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
+                          {METHODIST_CLASSES.map((cls, idx) => (
+                            <option key={idx} value={cls.name}>{cls.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
 
                     <div className="form-group">
-                      <label className="form-label">Sexe du défunt *</label>
+                      <label className="form-label">Sexe du défunt <span style={{ color: 'red' }}>*</span></label>
                       <select name="sexe_defunt" className="form-control" value={formData.sexe_defunt} onChange={handleChange} required>
-                        <option value="Masculin">Masculin (Du Frère décédé)</option>
-                        <option value="Féminin">Féminin (De la Sœur décédée)</option>
+                        <option value="Masculin">Masculin</option>
+                        <option value="Féminin">Féminin</option>
                       </select>
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Nom du Frère (de la Sœur) décédé(e) *</label>
-                      <input type="text" name="frere_soeur" placeholder="Ex: Feu Frère Yao Kouadio Pierre" className="form-control" value={formData.frere_soeur} onChange={handleChange} required />
+                      <label className="form-label">
+                        {formData.sexe_defunt === 'Féminin' ? 'Nom de la Sœur décédée' : 'Nom du Frère décédé'} <span style={{ color: 'red' }}>*</span>
+                      </label>
+                      <input 
+                        type="text" 
+                        name="frere_soeur" 
+                        placeholder={formData.sexe_defunt === 'Féminin' ? "Ex: Feue Sœur Kouassi Amoin" : "Ex: Feu Frère YAPI YAPO MARIE LOUISE"} 
+                        className="form-control" 
+                        value={formData.frere_soeur} 
+                        onChange={handleChange} 
+                        required 
+                      />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Décédé(e) le *</label>
+                      <label className="form-label">Décédé(e) le <span style={{ color: 'red' }}>*</span></label>
                       <input type="date" name="decede_le" className="form-control" value={formData.decede_le} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Lieu de Décès *</label>
-                      <input type="text" name="lieu_deces" placeholder="Ex: CHU de Yopougon" className="form-control" value={formData.lieu_deces} onChange={handleChange} required />
+                      <label className="form-label">Lieu de Décès <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="lieu_deces" placeholder="CHU de Yopougon" className="form-control" value={formData.lieu_deces} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
                       <label className="form-label">Lieu de la Levée de Corps</label>
-                      <input type="text" name="lieu_levee" placeholder="Ex: Morgue d'Anyama" className="form-control" value={formData.lieu_levee} onChange={handleChange} />
+                      <input type="text" name="lieu_levee" placeholder="Morgue d'Anyama" className="form-control" value={formData.lieu_levee} onChange={handleChange} />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Date de l'Enterrement *</label>
+                      <label className="form-label">Date de l'Enterrement <span style={{ color: 'red' }}>*</span></label>
                       <input type="date" name="date_enterrement" className="form-control" value={formData.date_enterrement} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Lieu de l'Enterrement *</label>
-                      <input type="text" name="lieu_enterrement" placeholder="Ex: Cimetière Municipal de Yopougon" className="form-control" value={formData.lieu_enterrement} onChange={handleChange} required />
+                      <label className="form-label">Lieu de l'Enterrement <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="lieu_enterrement" placeholder="Cimetière Municipal de Yopougon" className="form-control" value={formData.lieu_enterrement} onChange={handleChange} required />
                     </div>
 
                   </div>
 
                   {/* Multiple Veillées Dynamic Block */}
                   <div style={{ marginTop: '1.5rem', padding: '1.25rem', backgroundColor: '#FEF3C7', borderRadius: '12px', border: '1px solid #FCD34D' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <label className="form-label" style={{ fontWeight: 700, color: '#92400E', margin: 0 }}>
-                        Programme des Veillées (Veillée 1, Veillée 2, etc.)
+                        Programme des obsèques
                       </label>
                       <button 
                         type="button" 
@@ -631,34 +703,44 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
                     </div>
 
                     {formData.veillees.map((v, idx) => (
-                      <div key={idx} style={{ display: 'flex', gap: '0.75rem', marginBottom: '0.75rem', alignItems: 'center' }}>
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          style={{ width: '130px', fontWeight: 700, flexShrink: 0 }} 
-                          value={v.titre} 
-                          onChange={(e) => {
-                            const updated = [...formData.veillees];
-                            updated[idx].titre = e.target.value;
-                            setFormData(prev => ({ ...prev, veillees: updated }));
-                          }} 
-                        />
-                        <input 
-                          type="text" 
-                          className="form-control" 
-                          placeholder="Ex: Veillée religieuse le 20/09/2026 à 19h au Temple Bethesda" 
-                          value={v.lieu_date} 
-                          onChange={(e) => handleVeilleeChange(idx, e.target.value)} 
-                        />
-                        {formData.veillees.length > 1 && (
-                          <button 
-                            type="button" 
-                            onClick={() => handleRemoveVeillee(idx)} 
-                            style={{ backgroundColor: '#FEE2E2', color: '#991B1B', border: 'none', borderRadius: '8px', padding: '0.5rem', cursor: 'pointer' }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
+                      <div key={idx} style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: '10px',
+                        padding: '0.85rem',
+                        marginBottom: '0.85rem',
+                        border: '1px solid #FCD34D'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem', gap: '0.5rem' }}>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            style={{ width: '130px', fontWeight: 700, fontSize: '0.88rem', padding: '0.35rem 0.6rem' }} 
+                            value={v.titre} 
+                            onChange={(e) => {
+                              const updated = [...formData.veillees];
+                              updated[idx].titre = e.target.value;
+                              setFormData(prev => ({ ...prev, veillees: updated }));
+                            }} 
+                          />
+                          {formData.veillees.length > 1 && (
+                            <button 
+                              type="button" 
+                              onClick={() => handleRemoveVeillee(idx)} 
+                              style={{ backgroundColor: '#FEE2E2', color: '#991B1B', border: 'none', borderRadius: '8px', padding: '0.4rem 0.6rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}
+                            >
+                              <Trash2 size={14} /> Supprimer
+                            </button>
+                          )}
+                        </div>
+                        <div>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            placeholder="Ex: Veillée religieuse le 20/09/2026 à 19h au Temple Béthesda" 
+                            value={v.lieu_date} 
+                            onChange={(e) => handleVeilleeChange(idx, e.target.value)} 
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -670,23 +752,23 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
               {activeForm === 'PRESENTATION_ENFANT' && (
                 <div>
                   <h3 style={{ fontSize: '1.2rem', marginBottom: '1.25rem', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Baby size={20} /> Formulaire de Présentation d'Enfant
+                    <Baby size={20} />Présentation d'Enfant
                   </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     
                     <div className="form-group">
-                      <label className="form-label">Date de Présentation au Temple *</label>
+                      <label className="form-label">Date de Présentation au Temple <span style={{ color: 'red' }}>*</span></label>
                       <input type="date" name="date_presentation" className="form-control" value={formData.date_presentation} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Nom & Prénoms de l'Enfant *</label>
-                      <input type="text" name="nom_enfant" placeholder="Ex: Bohoussou Samuel Yoann" className="form-control" value={formData.nom_enfant} onChange={handleChange} required />
+                      <label className="form-label">Nom et Prénoms de l'Enfant <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="nom_enfant" placeholder="Bohoussou Samuel Yoann" className="form-control" value={formData.nom_enfant} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Genre de l'Enfant *</label>
+                      <label className="form-label">Genre de l'Enfant <span style={{ color: 'red' }}>*</span></label>
                       <select name="sexe_enfant" className="form-control" value={formData.sexe_enfant} onChange={handleChange} required>
                         <option value="Masculin">Masculin</option>
                         <option value="Féminin">Féminin</option>
@@ -694,29 +776,33 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Nom & Prénoms du Père *</label>
-                      <input type="text" name="nom_pere" placeholder="Ex: Bohoussou Marc" className="form-control" value={formData.nom_pere} onChange={handleChange} required />
+                      <label className="form-label">Nom et Prénoms du Père <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="nom_pere" placeholder="Bohoussou Marc" className="form-control" value={formData.nom_pere} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Nom & Prénoms de la Mère *</label>
-                      <input type="text" name="nom_mere" placeholder="Ex: Bohoussou Esther" className="form-control" value={formData.nom_mere} onChange={handleChange} required />
+                      <label className="form-label">Nom et Prénoms de la Mère <span style={{ color: 'red' }}>*</span></label>
+                      <input type="text" name="nom_mere" placeholder="Bohoussou Esther" className="form-control" value={formData.nom_mere} onChange={handleChange} required />
                     </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Classe Méthodiste *</label>
-                      <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
-                        <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
-                        {METHODIST_CLASSES.map((cls, idx) => (
-                          <option key={idx} value={cls.name}>{cls.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {user?.role !== 'conducteur' && (
+                      <>
+                        <div className="form-group">
+                          <label className="form-label">Classe Méthodiste <span style={{ color: 'red' }}>*</span></label>
+                          <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
+                            <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
+                            {METHODIST_CLASSES.map((cls, idx) => (
+                              <option key={idx} value={cls.name}>{cls.name}</option>
+                            ))}
+                          </select>
+                        </div>
 
-                    <div className="form-group">
-                      <label className="form-label">Conducteur (trice) *</label>
-                      <input type="text" name="conducteur" placeholder="Conducteur (auto-rempli)" className="form-control" value={formData.conducteur} onChange={handleChange} required />
-                    </div>
+                        <div className="form-group">
+                          <label className="form-label">Conducteur (trice) <span style={{ color: 'red' }}>*</span></label>
+                          <input type="text" name="conducteur" placeholder="Conducteur (auto-rempli)" className="form-control" value={formData.conducteur} onChange={handleChange} required />
+                        </div>
+                      </>
+                    )}
 
                   </div>
                 </div>
@@ -725,44 +811,48 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
               {/* Form 4: Reunion de classe */}
               {activeForm === 'REUNION_CLASSE' && (
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '1.25rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Calendar size={20} /> Formulaire de Réunion de Classe Méthodiste
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '1.25rem', color: '#0f11a3ff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Calendar size={20} />Réunion de Classe Méthodiste
                   </h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
                     
-                    <div className="form-group">
-                      <label className="form-label">Classe Méthodiste *</label>
-                      <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
-                        <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
-                        {METHODIST_CLASSES.map((cls, idx) => (
-                          <option key={idx} value={cls.name}>{cls.name}</option>
-                        ))}
-                      </select>
-                    </div>
+                    {user?.role !== 'conducteur' && (
+                      <>
+                        <div className="form-group">
+                          <label className="form-label">Classe Méthodiste <span style={{ color: 'red' }}>*</span></label>
+                          <select name="classe" className="form-control" value={formData.classe} onChange={handleClassSelect} required>
+                            <option value="">-- Choisir la Classe Méthodiste (28 Classes) --</option>
+                            {METHODIST_CLASSES.map((cls, idx) => (
+                              <option key={idx} value={cls.name}>{cls.name}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="form-group">
+                          <label className="form-label">Conducteur (trice) <span style={{ color: 'red' }}>*</span></label>
+                          <input type="text" name="conducteur" placeholder="Conducteur (auto-rempli)" className="form-control" value={formData.conducteur} onChange={handleChange} required />
+                        </div>
+                      </>
+                    )}
 
                     <div className="form-group">
-                      <label className="form-label">Conducteur (trice) *</label>
-                      <input type="text" name="conducteur" placeholder="Conducteur (auto-rempli)" className="form-control" value={formData.conducteur} onChange={handleChange} required />
-                    </div>
-
-                    <div className="form-group">
-                      <label className="form-label">Date de la réunion *</label>
+                      <label className="form-label">Date de la réunion <span style={{ color: 'red' }}>*</span></label>
                       <input type="date" name="date_reunion" className="form-control" value={formData.date_reunion} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Heure *</label>
+                      <label className="form-label">Heure <span style={{ color: 'red' }}>*</span></label>
                       <input type="time" name="heure" className="form-control" value={formData.heure} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Lieu de la réunion *</label>
+                      <label className="form-label">Lieu de la réunion <span style={{ color: 'red' }}>*</span></label>
                       <input type="text" name="lieu" placeholder="Ex: Salle d'étude du Temple" className="form-control" value={formData.lieu} onChange={handleChange} required />
                     </div>
 
                     <div className="form-group">
-                      <label className="form-label">Lieu de rassemblement *</label>
+                      <label className="form-label">Lieu de rassemblement <span style={{ color: 'red' }}>*</span></label>
                       <input type="text" name="lieu_rassemblement" placeholder="Ex: Cour principale du Temple" className="form-control" value={formData.lieu_rassemblement} onChange={handleChange} required />
                     </div>
 
@@ -773,7 +863,7 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
               {/* Photo Upload Component */}
               <div style={{ marginTop: '1.75rem', padding: '1.25rem', backgroundColor: '#F8FAFC', borderRadius: '14px', border: '1.5px dashed #CBD5E1' }}>
                 <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', color: '#107C41' }}>
-                  <ImageIcon size={18} /> Joindre une ou des photos (PNG / JPEG) - Optionnel
+                  <ImageIcon size={18} /> Joindre une ou des photos
                 </label>
                 <p style={{ fontSize: '0.83rem', color: '#64748B', marginBottom: '1rem' }}>
                   Vous pouvez joindre des photos (photo du défunt, photo de l'enfant, intention de prière...).
@@ -781,7 +871,7 @@ export default function SubmitFormPage({ setActiveTab, onTrackCodeSelect }) {
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                   <label className="btn-secondary" style={{ cursor: 'pointer', fontSize: '0.88rem' }}>
-                    <Upload size={16} /> {uploadingPhoto ? "Téléversement en cours..." : "Téléverser des photos (PNG / JPEG)"}
+                    <Upload size={16} /> {uploadingPhoto ? "Téléversement en cours..." : "Cliquez ici pour joindre la photo"}
                     <input 
                       type="file" 
                       accept="image/png, image/jpeg, image/jpg" 

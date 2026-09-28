@@ -21,32 +21,12 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({'message': 'Nom d\'utilisateur ou mot de passe incorrect.'}), 401
 
-    # Check if currently blocked
-    now = datetime.utcnow()
-    if user.otp_blocked_until and user.otp_blocked_until > now:
-        remaining_sec = int((user.otp_blocked_until - now).total_seconds())
-        return jsonify({
-            'message': f'Compte temporairement bloqué suite à 5 tentatives infructueuses. Veuillez patienter {remaining_sec} secondes.',
-            'blocked_for_seconds': remaining_sec
-        }), 429
-
-    # Generate 4-digit OTP
-    otp = f"{random.randint(1000, 9999)}"
-    user.otp_code = otp
-    user.otp_created_at = now
-    db.session.commit()
-
-    # Send SMS via Infobip API
-    target_phone = user.phone_number or "+2250556936994"
-    SmsService.send_otp_sms(target_phone, otp)
-
-    # Return partial response requesting OTP
-    masked_phone = target_phone[-5:] if len(target_phone) >= 5 else target_phone
+    # Direct login without OTP SMS
+    token = generate_jwt_token(user.id, user.username, user.role)
     return jsonify({
-        'require_otp': True,
-        'username': user.username,
-        'phone_masked': f"...{masked_phone}",
-        'message': f'Code OTP à 4 chiffres envoyé au +{target_phone.replace("+", "")}.'
+        'message': 'Authentification réussie !',
+        'token': token,
+        'user': user.to_dict()
     }), 200
 
 @auth_bp.route('/verify-otp', methods=['POST'])
@@ -56,7 +36,7 @@ def verify_otp():
     otp_code = (data.get('otp_code') or '').strip()
 
     if not username or not otp_code:
-        return jsonify({'message': 'Code OTP à 4 chiffres requis.'}), 400
+        return jsonify({'message': 'Code de validation à 4 chiffres requis.'}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user:
@@ -64,17 +44,20 @@ def verify_otp():
 
     now = datetime.utcnow()
 
-    # Check if blocked
-    if user.otp_blocked_until and user.otp_blocked_until > now:
-        remaining_sec = int((user.otp_blocked_until - now).total_seconds())
-        return jsonify({
-            'message': f'Compte temporairement bloqué suite à 5 tentatives infructueuses. Veuillez patienter {remaining_sec} secondes.',
-            'blocked_for_seconds': remaining_sec
-        }), 429
+    # Check 30 seconds expiration delay
+    if user.otp_created_at:
+        elapsed_sec = (now - user.otp_created_at).total_seconds()
+        if elapsed_sec > 30:
+            user.otp_code = None
+            db.session.commit()
+            return jsonify({
+                'message': 'Le code de validation a expiré (délai de 30 secondes dépassé). Veuillez demander un nouveau code.',
+                'expired': True
+            }), 400
 
     # Check OTP correctness
     if user.otp_code and user.otp_code == otp_code:
-        # Success! Reset attempts and block status
+        # Success! Reset attempts and code
         user.otp_attempts = 0
         user.otp_code = None
         user.otp_blocked_until = None
@@ -89,19 +72,19 @@ def verify_otp():
     else:
         # Failed attempt
         user.otp_attempts = (user.otp_attempts or 0) + 1
-        if user.otp_attempts >= 5:
-            user.otp_blocked_until = now + timedelta(seconds=30)
-            user.otp_attempts = 0 # Reset count for next cycle after block
+        if user.otp_attempts >= 3:
+            user.otp_attempts = 0
+            user.otp_code = None
             db.session.commit()
             return jsonify({
-                'message': '5 tentatives échouées. Compte bloqué pendant 30 secondes.',
-                'blocked_for_seconds': 30
-            }), 429
+                'message': '3 tentatives échouées. Redirection vers la page des identifiants.',
+                'redirect_credentials': True
+            }), 400
         else:
             db.session.commit()
-            remaining = 5 - user.otp_attempts
+            remaining = 3 - user.otp_attempts
             return jsonify({
-                'message': f'Code OTP incorrect. Il vous reste {remaining} tentative(s).',
+                'message': f'Code incorrect. Il vous reste {remaining} tentative(s).',
                 'remaining_attempts': remaining
             }), 400
 
@@ -135,4 +118,33 @@ def resend_otp():
 @token_required
 def get_current_user(current_user):
     return jsonify({'user': current_user.to_dict()}), 200
+
+
+@auth_bp.route('/change-password', methods=['POST'])
+@token_required
+def change_password(current_user):
+    data = request.get_json() or {}
+    new_password = data.get('new_password')
+    confirm_password = data.get('confirm_password')
+
+    if not new_password or not confirm_password:
+        return jsonify({'message': 'Veuillez fournir et me confirmer le nouveau mot de passe.'}), 400
+
+    if new_password != confirm_password:
+        return jsonify({'message': 'Les mots de passe ne correspondent pas.'}), 400
+
+    if len(new_password) < 6:
+        return jsonify({'message': 'Le nouveau mot de passe doit comporter au moins 6 caractères.'}), 400
+
+    if new_password == '123456':
+        return jsonify({'message': 'Vous ne pouvez pas réutiliser le mot de passe par défaut 123456.'}), 400
+
+    current_user.set_password(new_password)
+    current_user.must_change_password = False
+    db.session.commit()
+
+    return jsonify({
+        'message': 'Votre mot de passe a été modifié avec succès !',
+        'user': current_user.to_dict()
+    }), 200
 

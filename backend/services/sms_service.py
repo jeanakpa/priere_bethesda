@@ -46,8 +46,7 @@ class SmsService:
         message_body = f"Code de vérification TEMPLE BETHESDA : {otp_code}. Valide pendant 5 minutes. Ne le partagez avec personne."
 
         print(f"\n==========================================")
-        print(f"[SMS INFOBIP] Envoi vers {clean_phone}")
-        print(f"[SMS INFOBIP] CODE OTP : [{otp_code}]")
+        print(f"[SMS INFOBIP] Envoi SMS vers {clean_phone}")
         print(f"==========================================\n")
 
         # Asynchronous dispatch

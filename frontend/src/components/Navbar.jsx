@@ -12,6 +12,13 @@ export default function Navbar({ activeTab, setActiveTab }) {
     setMobileMenuOpen(false);
   };
 
+  const getRoleTitle = () => {
+    if (!user) return '';
+    if (user.role === 'secretariat') return 'Secrétariat';
+    if (user.role === 'president_conducteur' || user.role === 'president') return 'Président des conducteurs';
+    return user.full_name || user.username;
+  };
+
   return (
     <header style={{
       backgroundColor: '#FFFFFF',
@@ -35,10 +42,10 @@ export default function Navbar({ activeTab, setActiveTab }) {
           />
           <div>
             <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 800, fontSize: '1.05rem', color: '#107C41', lineHeight: 1.2 }}>
-              TEMPLE BETHESDA
+              TEMPLE BÉTHESDA
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>
-              Yopougon Niangon Sud • Circuit Niangon
+              Yopougon Niangon Sud • Circuit de Niangon
             </div>
           </div>
         </div>
@@ -88,7 +95,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
                 className="btn-primary"
                 style={{ fontSize: '0.85rem', padding: '0.55rem 1rem', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
               >
-                <ShieldCheck size={16} /> {user?.role === 'secretariat' ? 'Secrétariat' : user?.role === 'president' ? 'Président' : 'Conducteur'} ({user?.username})
+                <ShieldCheck size={16} /> {getRoleTitle()}
               </button>
               <button 
                 onClick={logout}
@@ -149,7 +156,7 @@ export default function Navbar({ activeTab, setActiveTab }) {
                 onClick={() => handleNav('admin')}
                 style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 600, color: '#107C41' }}
               >
-                Espace Répertoire & Stats ({user?.username})
+                Statistiques ( {getRoleTitle()} )
               </button>
               <button 
                 onClick={() => { logout(); setMobileMenuOpen(false); }}

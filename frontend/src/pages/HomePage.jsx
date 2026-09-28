@@ -50,7 +50,7 @@ export default function HomePage({ setActiveTab, onTrackCodeSelect }) {
             marginBottom: '2.5rem',
             fontWeight: 400
           }}>
-            <strong style={{ color: '#107C41' }}>Église Méthodiste de Côte d'Ivoire</strong> • Temple Bethesda de Yopougon Niangon Sud. <br/>
+            <strong style={{ color: '#107C41' }}>Église Méthodiste de Côte d'Ivoire</strong> • Temple Béthesda de Yopougon Niangon Sud. <br/>
             Soumettez et suivez facilement vos fiches de prière, annonces de nécrologie, présentations d'enfants et réunions de classe.
           </p>
 

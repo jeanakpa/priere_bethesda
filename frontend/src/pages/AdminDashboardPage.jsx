@@ -129,10 +129,16 @@ export default function AdminDashboardPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
         <div>
           <span className="badge badge-success" style={{ marginBottom: '0.4rem' }}>
-            <ShieldCheck size={14} style={{ marginRight: '4px' }} /> SECRÉTARIAT D'ÉGLISE
+            <ShieldCheck size={14} style={{ marginRight: '4px' }} /> {
+              user?.role === 'secretariat' ? "SECRÉTARIAT D'ÉGLISE" :
+              (user?.role === 'president_conducteur' || user?.role === 'president') ? "PRÉSIDENT DES CONDUCTEURS" :
+              user?.full_name || "CONDUCTEUR"
+            }
           </span>
-          <h1 style={{ fontSize: '2rem', color: '#0F172A' }}>Tableau de Bord & Gestion des Fiches</h1>
-          <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Temple Bethesda de Yopougon Niangon Sud</p>
+          <h1 style={{ fontSize: '2rem', color: '#0F172A' }}>
+            {user?.role === 'secretariat' ? "Tableau de Bord & Gestion des Fiches" : "Gestion des Fiches"}
+          </h1>
+          <p style={{ color: '#64748B', fontSize: '0.9rem' }}>Plateforme de demande de prières</p>
         </div>
 
         <button onClick={() => { fetchStats(); fetchRequests(); }} className="btn-secondary" style={{ fontSize: '0.85rem' }}>
@@ -197,9 +203,11 @@ export default function AdminDashboardPage() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.75rem',
-                    cursor: 'pointer'
+                    cursor: user?.role === 'conducteur' ? 'default' : 'pointer'
                   }}
-                  onClick={() => setClassFilter(clsName)}
+                  onClick={() => {
+                    if (user?.role !== 'conducteur') setClassFilter(clsName);
+                  }}
                   >
                     <span style={{ fontWeight: 600, color: '#0F172A', fontSize: '0.9rem' }}>{clsName}</span>
                     <span className="badge badge-success" style={{ fontSize: '0.85rem' }}>{count} fiches</span>
@@ -232,16 +240,18 @@ export default function AdminDashboardPage() {
             </select>
           </div>
 
-          {/* Filter 2: Methodist Class */}
-          <div>
-            <label className="form-label">Classe Méthodiste</label>
-            <select className="form-control" value={classFilter} onChange={(e) => setClassFilter(e.target.value)}>
-              <option value="">-- Toutes les classes --</option>
-              {stats?.available_classes?.map(cls => (
-                <option key={cls} value={cls}>{cls}</option>
-              ))}
-            </select>
-          </div>
+          {/* Filter 2: Methodist Class (Hidden for Conducteur) */}
+          {user?.role !== 'conducteur' && (
+            <div>
+              <label className="form-label">Classe Méthodiste</label>
+              <select className="form-control" value={classFilter} onChange={(e) => setClassFilter(e.target.value)}>
+                <option value="">-- Toutes les classes --</option>
+                {stats?.available_classes?.map(cls => (
+                  <option key={cls} value={cls}>{cls}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Filter 3: Status */}
           <div>

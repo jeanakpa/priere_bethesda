@@ -1,19 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Lock, User, AlertCircle, Smartphone, KeyRound, RefreshCw } from 'lucide-react';
+import { Lock, User, AlertCircle, KeyRound, CheckCircle2, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import logoImg from '../assets/eglise.png';
 import { API_BASE_URL } from '../config';
 
 export default function AdminLoginPage({ setActiveTab }) {
   const { login } = useAuth();
+  
+  // Navigation / Workflow step: 'login' | 'change_password'
+  const [step, setStep] = useState('login');
+  
+  // Form fields
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   
-  // OTP state
-  const [requireOtp, setRequireOtp] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [phoneMasked, setPhoneMasked] = useState('');
-  
+  // Temporary session during password change
+  const [tempToken, setTempToken] = useState(null);
+  const [tempUser, setTempUser] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -22,7 +28,6 @@ export default function AdminLoginPage({ setActiveTab }) {
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
   useEffect(() => {
-    // Check localStorage for active lockout
     const storedLockout = localStorage.getItem('bethesda_otp_lockout_until');
     if (storedLockout) {
       const remaining = Math.ceil((parseInt(storedLockout, 10) - Date.now()) / 1000);
@@ -80,10 +85,20 @@ export default function AdminLoginPage({ setActiveTab }) {
         return;
       }
 
-      if (res.ok && data.require_otp) {
-        setRequireOtp(true);
-        setPhoneMasked(data.phone_masked || '...36994');
-        setSuccessMsg(data.message || 'Code OTP à 4 chiffres envoyé par SMS.');
+      if (res.ok && data.token) {
+        const userMustChange = data.user?.must_change_password || password === '123456';
+        
+        if (userMustChange) {
+          // Mandatory First Login Password Change Step
+          setTempToken(data.token);
+          setTempUser(data.user);
+          setStep('change_password');
+          setSuccessMsg('Première connexion détectée : Veuillez choisir votre nouveau mot de passe personnel.');
+        } else {
+          // Normal login
+          login(data.token, data.user);
+          if (setActiveTab) setActiveTab('admin');
+        }
       } else {
         setErrorMsg(data.message || 'Nom d\'utilisateur ou mot de passe incorrect.');
       }
@@ -93,86 +108,75 @@ export default function AdminLoginPage({ setActiveTab }) {
     }
   };
 
-  const handleOtpSubmit = async (e) => {
+  const handleChangePasswordSubmit = async (e) => {
     e.preventDefault();
-    if (lockoutTimer > 0) return;
-
-    setLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
 
+    if (!newPassword || !confirmPassword) {
+      setErrorMsg('Veuillez saisir et me confirmer le nouveau mot de passe.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('Les deux mots de passe ne correspondent pas. Veuillez réessayer.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setErrorMsg('Le nouveau mot de passe doit comporter au moins 6 caractères.');
+      return;
+    }
+
+    if (newPassword === '123456') {
+      setErrorMsg('Vous ne pouvez pas réutiliser le mot de passe par défaut 123456. Choisissez un nouveau mot de passe personnel.');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim().toLowerCase(), otp_code: otpCode.trim() })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${tempToken}`
+        },
+        body: JSON.stringify({
+          new_password: newPassword,
+          confirm_password: confirmPassword
+        })
       });
       const data = await res.json();
       setLoading(false);
-
-      if (res.status === 429) {
-        const sec = data.blocked_for_seconds || 30;
-        triggerLockout(sec);
-        setErrorMsg(data.message || '5 tentatives échouées. Compte bloqué pendant 30 secondes.');
-        return;
-      }
 
       if (res.ok) {
-        login(data.token, data.user);
+        // Password changed successfully, complete login
+        login(tempToken, data.user);
         if (setActiveTab) setActiveTab('admin');
       } else {
-        setErrorMsg(data.message || 'Code OTP incorrect.');
+        setErrorMsg(data.message || 'Échec de la modification du mot de passe.');
       }
     } catch (err) {
       setLoading(false);
-      setErrorMsg('Erreur réseau lors de la vérification OTP.');
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (lockoutTimer > 0) return;
-    setLoading(true);
-    setErrorMsg('');
-    setSuccessMsg('');
-
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/resend-otp`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: username.trim().toLowerCase() })
-      });
-      const data = await res.json();
-      setLoading(false);
-
-      if (res.status === 429) {
-        const sec = data.blocked_for_seconds || 30;
-        triggerLockout(sec);
-        setErrorMsg(data.message);
-      } else if (res.ok) {
-        setSuccessMsg('Un nouveau code OTP à 4 chiffres a été envoyé par SMS.');
-      } else {
-        setErrorMsg(data.message || 'Erreur lors du renvoi de l\'OTP.');
-      }
-    } catch (err) {
-      setLoading(false);
-      setErrorMsg('Erreur de communication avec le serveur.');
+      setErrorMsg('Erreur lors de la mise à jour du mot de passe.');
     }
   };
 
   return (
     <div className="container animate-fade-in" style={{ padding: '3.5rem 1.25rem' }}>
-      <div style={{ maxWidth: '440px', margin: '0 auto' }}>
+      <div style={{ maxWidth: '460px', margin: '0 auto' }}>
         
-        <div className="card" style={{ padding: '2.5rem 2rem' }}>
+        <div className="card" style={{ padding: '2.5rem 2rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' }}>
           
           {/* Header */}
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <img src={logoImg} alt="Logo Temple Bethesda" style={{ height: '70px', objectFit: 'contain', marginBottom: '1rem' }} />
-            <h2 style={{ fontSize: '1.45rem', color: '#0F172A', marginBottom: '0.25rem' }}>
-              Portail d'Authentification
+            <img src={logoImg} alt="Logo Temple Bethesda" style={{ height: '75px', objectFit: 'contain', marginBottom: '1rem' }} />
+            <h2 style={{ fontSize: '1.45rem', color: '#0F172A', marginBottom: '0.25rem', fontWeight: 700 }}>
+              {step === 'login' ? "Portail d'Authentification" : "Modification du Mot de Passe"}
             </h2>
             <p style={{ fontSize: '0.85rem', color: '#64748B' }}>
-              Temple Bethesda de Yopougon Niangon Sud
+              {step === 'login' ? "Temple Bethesda de Yopougon Niangon Sud" : `Compte : ${tempUser?.full_name || username}`}
             </p>
           </div>
 
@@ -189,23 +193,28 @@ export default function AdminLoginPage({ setActiveTab }) {
               textAlign: 'center',
               fontWeight: 600
             }}>
-              ⏳ Accès temporairement bloqué suite à 5 échecs.<br/>
+              ⏳ Accès temporairement bloqué.<br/>
               <span style={{ fontSize: '1.1rem', color: '#DC2626' }}>Réessayez dans {lockoutTimer} seconde(s)</span>
             </div>
           )}
 
           {/* Success Banner */}
-          {successMsg && !errorMsg && (
+          {successMsg && (
             <div style={{
-              padding: '0.75rem 1rem',
-              backgroundColor: '#E6F4EA',
-              border: '1px solid #A7F3D0',
-              color: '#065F46',
+              padding: '0.85rem 1rem',
+              backgroundColor: '#F0FDF4',
+              border: '1px solid #86EFAC',
+              color: '#166534',
               borderRadius: '8px',
               marginBottom: '1.25rem',
-              fontSize: '0.88rem'
+              fontSize: '0.85rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              lineHeight: 1.4
             }}>
-              ✅ {successMsg}
+              <CheckCircle2 size={20} color="#16A34A" style={{ flexShrink: 0 }} />
+              <span>{successMsg}</span>
             </div>
           )}
 
@@ -221,19 +230,20 @@ export default function AdminLoginPage({ setActiveTab }) {
               fontSize: '0.88rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              lineHeight: 1.4
             }}>
               <AlertCircle size={18} style={{ flexShrink: 0 }} />
               <span>{errorMsg}</span>
             </div>
           )}
 
-          {/* STEP 1: Username & Password Form */}
-          {!requireOtp ? (
+          {/* Step 1: Username & Password Form */}
+          {step === 'login' && (
             <form onSubmit={handleCredentialsSubmit}>
               
               <div className="form-group">
-                <label className="form-label">Identifiant (Nom & Prénom collés)</label>
+                <label className="form-label">Identifiant</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <User size={18} color="#64748B" style={{ position: 'absolute', left: '12px' }} />
                   <input 
@@ -242,7 +252,7 @@ export default function AdminLoginPage({ setActiveTab }) {
                     style={{ paddingLeft: '38px' }}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="ex: leonceaka ou yedohjosephine"
+                    placeholder="ex: leonceaka"
                     disabled={lockoutTimer > 0 || loading}
                     required
                   />
@@ -272,54 +282,67 @@ export default function AdminLoginPage({ setActiveTab }) {
                 disabled={loading || lockoutTimer > 0}
                 style={{ width: '100%', justifyContent: 'center', marginTop: '1.5rem', padding: '0.85rem' }}
               >
-                {loading ? "Vérification..." : "Continuer vers Vérification OTP"}
+                {loading ? "Connexion..." : "Connexion"}
               </button>
 
             </form>
-          ) : (
-            
-            /* STEP 2: 4-Digit OTP Form */
-            <form onSubmit={handleOtpSubmit}>
+          )}
+
+          {/* Step 2: First-time Password Change Form */}
+          {step === 'change_password' && (
+            <form onSubmit={handleChangePasswordSubmit}>
               
               <div style={{
-                padding: '1rem',
-                backgroundColor: '#F8FAFC',
-                borderRadius: '12px',
-                border: '1px solid #E2E8F0',
+                padding: '0.85rem 1rem',
+                backgroundColor: '#EFF6FF',
+                border: '1px solid #BFDBFE',
+                borderRadius: '8px',
                 marginBottom: '1.5rem',
-                textAlign: 'center'
+                fontSize: '0.83rem',
+                color: '#1E40AF',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.5rem'
               }}>
-                <Smartphone size={32} color="#107C41" style={{ marginBottom: '0.5rem' }} />
-                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#0F172A' }}>
-                  Code de Sécurité OTP (4 chiffres)
-                </div>
-                <div style={{ fontSize: '0.82rem', color: '#64748B', marginTop: '4px' }}>
-                  Un code SMS a été envoyé au num : <strong>+2250708729293</strong>
+                <ShieldAlert size={20} color="#2563EB" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong>Première Connexion Obligatoire :</strong><br/>
+                  Veuillez remplacer le mot de passe générique par un nouveau mot de passe personnel d'au moins 6 caractères.
                 </div>
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={{ textAlign: 'center', display: 'block' }}>
-                  Saisissez le code OTP à 4 chiffres
-                </label>
+                <label className="form-label">Nouveau mot de passe</label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <KeyRound size={20} color="#107C41" style={{ position: 'absolute', left: '14px' }} />
+                  <KeyRound size={18} color="#64748B" style={{ position: 'absolute', left: '12px' }} />
                   <input 
-                    type="text" 
+                    type="password" 
                     className="form-control"
-                    style={{ 
-                      paddingLeft: '44px', 
-                      letterSpacing: '8px', 
-                      fontSize: '1.3rem', 
-                      fontWeight: 800, 
-                      textAlign: 'center' 
-                    }}
-                    maxLength={4}
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                    placeholder="••••"
-                    disabled={lockoutTimer > 0 || loading}
+                    style={{ paddingLeft: '38px' }}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Saisissez votre nouveau mot de passe"
+                    disabled={loading}
                     required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Confirmer le nouveau mot de passe</label>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <KeyRound size={18} color="#64748B" style={{ position: 'absolute', left: '12px' }} />
+                  <input 
+                    type="password" 
+                    className="form-control"
+                    style={{ paddingLeft: '38px' }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirmez à nouveau votre mot de passe"
+                    disabled={loading}
+                    required
+                    minLength={6}
                   />
                 </div>
               </div>
@@ -327,30 +350,11 @@ export default function AdminLoginPage({ setActiveTab }) {
               <button 
                 type="submit" 
                 className="btn-primary" 
-                disabled={loading || lockoutTimer > 0 || otpCode.length < 4}
-                style={{ width: '100%', justifyContent: 'center', marginTop: '1.25rem', padding: '0.85rem' }}
+                disabled={loading}
+                style={{ width: '100%', justifyContent: 'center', marginTop: '1.5rem', padding: '0.85rem' }}
               >
-                {loading ? "Vérification OTP..." : "Valider et Accéder à la Plateforme"}
+                {loading ? "Enregistrement en cours..." : "Enregistrer et accéder au tableau de bord"}
               </button>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem' }}>
-                <button 
-                  type="button" 
-                  onClick={() => setRequireOtp(false)}
-                  style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '0.82rem', cursor: 'pointer' }}
-                >
-                  ← Modifier l'identifiant
-                </button>
-
-                <button 
-                  type="button" 
-                  onClick={handleResendOtp}
-                  disabled={lockoutTimer > 0 || loading}
-                  style={{ background: 'none', border: 'none', color: '#107C41', fontWeight: 600, fontSize: '0.82rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
-                >
-                  <RefreshCw size={13} /> Renvoyer le SMS
-                </button>
-              </div>
 
             </form>
           )}
@@ -361,4 +365,3 @@ export default function AdminLoginPage({ setActiveTab }) {
     </div>
   );
 }
-
