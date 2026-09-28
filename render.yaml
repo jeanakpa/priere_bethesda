@@ -27,7 +27,6 @@ services:
   - type: web
     name: priere-bethesda-frontend
     env: static
-    region: frankfurt
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
@@ -40,11 +39,11 @@ services:
         fromService:
           type: web
           name: priere-bethesda-backend
-          property: url
+          property: hostpath
 
 databases:
   # 3. PostgreSQL Database Instance on Render
   - name: priere-bethesda-db
     databaseName: priere_bethesda
-    user: postgres
+    user: priere_bethesda_user
     region: frankfurt
