@@ -1,5 +1,8 @@
 // API configuration helper dynamically adapting to environment or local machine IP
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || `http://${window.location.hostname}:5050`;
+const rawEnvUrl = import.meta.env.VITE_API_BASE_URL;
+export const API_BASE_URL = rawEnvUrl
+  ? (rawEnvUrl.startsWith('http://') || rawEnvUrl.startsWith('https://') ? rawEnvUrl : `https://${rawEnvUrl}`)
+  : `http://${window.location.hostname}:5050`;
 
 // Liste officielle des 28 Classes Méthodistes et des Organisations du Temple Bethesda
 export const METHODIST_CLASSES = [

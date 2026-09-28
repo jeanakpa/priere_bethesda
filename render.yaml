@@ -39,7 +39,7 @@ services:
         fromService:
           type: web
           name: priere-bethesda-backend
-          property: hostpath
+          property: host
 
 databases:
   # 3. PostgreSQL Database Instance on Render
