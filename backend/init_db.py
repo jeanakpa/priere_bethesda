@@ -58,7 +58,6 @@ def init_tables_and_seed():
     app = create_app()
     with app.app_context():
         print("Mise à jour des tables de la base de données...")
-        db.drop_all()
         db.create_all()
 
         DEFAULT_PASS = "123456"
@@ -217,6 +216,11 @@ def init_tables_and_seed():
             print("Données d'exemple insérées avec succès !")
 
 if __name__ == "__main__":
-    if create_database_if_not_exists():
-        init_tables_and_seed()
-        print("Initialisation PostgreSQL terminée avec succès !")
+    try:
+        if os.getenv("POSTGRES_HOST", "localhost") == "localhost" and not os.getenv("DATABASE_URL"):
+            create_database_if_not_exists()
+    except Exception as e:
+        print("Note : Vérification locale ignorée :", e)
+    
+    init_tables_and_seed()
+    print("Initialisation PostgreSQL terminée avec succès !")
