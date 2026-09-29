@@ -9,8 +9,8 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    # Enable CORS for all routes (React frontend on 5173 / localhost)
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # Enable CORS for all routes
+    CORS(app, resources={r"/*": {"origins": "*"}})
 
     # Ensure storage and assets directories exist
     os.makedirs(app.config['STORAGE_DIR'], exist_ok=True)

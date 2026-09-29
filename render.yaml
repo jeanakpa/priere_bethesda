@@ -39,10 +39,7 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_BASE_URL
-        fromService:
-          type: web
-          name: priere-bethesda-backend
-          property: host
+        value: https://priere-bethesda-backend.onrender.com
 
 databases:
   # 3. PostgreSQL Database Instance on Render (FREE PLAN)
