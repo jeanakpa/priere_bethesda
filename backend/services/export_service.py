@@ -115,16 +115,16 @@ class ExportService:
         # Header text
         p_hdr = cell_header.paragraphs[0]
         p_hdr.alignment = WD_ALIGN_PARAGRAPH.LEFT
-        r1 = p_hdr.add_run("EGLISE METHODISTE DE COTE D’IVOIRE\n")
+        r1 = p_hdr.add_run("ÉGLISE MÉTHODISTE DE CÔTE D’IVOIRE\n")
         r1.bold = True
         r1.font.size = Pt(11)
         r1.font.name = 'Calibri'
         
-        r2 = p_hdr.add_run("DISTRICT DE YOPOUGON – CIRCUIT NIANGON\n")
+        r2 = p_hdr.add_run("DISTRICT DE YOPOUGON – CIRCUIT DE NIANGON\n")
         r2.bold = True
         r2.font.size = Pt(9.5)
         
-        r3 = p_hdr.add_run("TEMPLE BETHESDA")
+        r3 = p_hdr.add_run("TEMPLE BÉTHESDA")
         r3.bold = True
         r3.font.size = Pt(12)
         r3.font.color.rgb = RGBColor(16, 124, 65)
@@ -133,10 +133,10 @@ class ExportService:
 
         # Title Box
         title_map = {
-            'DEMANDE_PRIERE': 'DEMANDE DE PRIERE',
-            'NECROLOGIE': 'NECROLOGIE',
-            'PRESENTATION_ENFANT': 'PRESENTATION D’ENFANT',
-            'REUNION_CLASSE': 'REUNION DE CLASSE METHODISTE'
+            'DEMANDE_PRIERE': 'DEMANDE DE PRIÈRE',
+            'NECROLOGIE': 'NÉCROLOGIE',
+            'PRESENTATION_ENFANT': 'PRÉSENTATION D’ENFANT',
+            'REUNION_CLASSE': 'RÉUNION DE CLASSE MÉTHODISTE'
         }
         title_text = title_map.get(prayer_request.form_type, 'FICHE BETHESDA')
 
@@ -406,9 +406,9 @@ class ExportService:
                 logo_img = ""
         
         hdr_text = Paragraph(
-            "<b>EGLISE METHODISTE DE COTE D’IVOIRE</b><br/>"
-            "DISTRICT DE YOPOUGON – CIRCUIT NIANGON<br/>"
-            "<font color='#107C41'><b>TEMPLE BETHESDA</b></font>",
+            "<b>ÉGLISE MÉTHODISTE DE CÔTE D’IVOIRE</b><br/>"
+            "DISTRICT DE YOPOUGON – CIRCUIT DE NIANGON<br/>"
+            "<font color='#107C41'><b>TEMPLE BÉTHESDA</b></font>",
             hdr_style
         )
         
@@ -426,10 +426,10 @@ class ExportService:
 
         # Title Box
         title_map = {
-            'DEMANDE_PRIERE': 'DEMANDE DE PRIERE',
-            'NECROLOGIE': 'NECROLOGIE',
-            'PRESENTATION_ENFANT': 'PRESENTATION D’ENFANT',
-            'REUNION_CLASSE': 'REUNION DE CLASSE METHODISTE'
+            'DEMANDE_PRIERE': 'DEMANDE DE PRIÈRE',
+            'NECROLOGIE': 'NÉCROLOGIE',
+            'PRESENTATION_ENFANT': 'PRÉSENTATION D’ENFANT',
+            'REUNION_CLASSE': 'RÉUNION DE CLASSE MÉTHODISTE'
         }
         title_text = title_map.get(prayer_request.form_type, 'FICHE BETHESDA')
         

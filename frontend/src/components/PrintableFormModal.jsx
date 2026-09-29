@@ -11,10 +11,10 @@ export default function PrintableFormModal({ request, onClose, token }) {
 
   const getTitle = () => {
     switch (formType) {
-      case 'NECROLOGIE': return 'NECROLOGIE';
-      case 'DEMANDE_PRIERE': return 'DEMANDE DE PRIERE';
-      case 'PRESENTATION_ENFANT': return 'PRESENTATION D’ENFANT';
-      case 'REUNION_CLASSE': return 'REUNION DE CLASSE METHODISTE';
+      case 'NECROLOGIE': return 'NÉCROLOGIE';
+      case 'DEMANDE_PRIERE': return 'DEMANDE DE PRIÈRE';
+      case 'PRESENTATION_ENFANT': return 'PRÉSENTATION D’ENFANT';
+      case 'REUNION_CLASSE': return 'RÉUNION DE CLASSE MÉTHODISTE';
       default: return 'FICHE BETHESDA';
     }
   };
@@ -202,7 +202,7 @@ export default function PrintableFormModal({ request, onClose, token }) {
               <img src={logoImg} alt="Logo" style={{ width: '75px', height: '75px', objectFit: 'contain' }} />
               <div>
                 <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#0F172A' }}>
-                  EGLISE METHODISTE DE COTE D’IVOIRE
+                  ÉGLISE MÉTHODISTE DE CÔTE D’IVOIRE
                 </div>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#475569' }}>
                   DISTRICT DE YOPOUGON – CIRCUIT DE NIANGON
@@ -263,25 +263,25 @@ export default function PrintableFormModal({ request, onClose, token }) {
 
               {formType === 'DEMANDE_PRIERE' && (
                 <div>
-                  <div><strong>DATE DE LA PRIERE :</strong> {formatFrenchDate(details.date_priere || request.event_date, true)}</div>
+                  <div><strong>DATE DE LA PRIÈRE :</strong> {formatFrenchDate(details.date_priere || request.event_date, true)}</div>
                   
                   {/* ONLY display requested prayer types in green color! */}
                   <div style={{ margin: '1rem 0', display: 'flex', flexDirection: 'column', gap: '0.5rem', fontWeight: 700, color: '#107C41' }}>
                     {details.priere_soutien && (
-                      <div style={{ fontSize: '1.05rem' }}>PRIERE DE SOUTIEN : [ X ]</div>
+                      <div style={{ fontSize: '1.05rem' }}>PRIÈRE DE SOUTIEN : [ X ]</div>
                     )}
                     {details.priere_guerison && (
-                      <div style={{ fontSize: '1.05rem' }}>PRIERE DE GUERISON : [ X ]</div>
+                      <div style={{ fontSize: '1.05rem' }}>PRIÈRE DE GUÉRISON : [ X ]</div>
                     )}
                     {details.priere_action_grace && (
-                      <div style={{ fontSize: '1.05rem' }}>PRIERE D’ACTION DE GRACE : [ X ]</div>
+                      <div style={{ fontSize: '1.05rem' }}>PRIÈRE D’ACTION DE GRÂCE : [ X ]</div>
                     )}
                     {!details.priere_soutien && !details.priere_guerison && !details.priere_action_grace && (
-                      <div style={{ fontSize: '1.05rem' }}>PRIERE D’ACTION DE GRACE : [ X ]</div>
+                      <div style={{ fontSize: '1.05rem' }}>PRIÈRE D’ACTION DE GRÂCE : [ X ]</div>
                     )}
                   </div>
 
-                  <div><strong>CLASSE METHODISTE :</strong> {details.classe || request.methode_classe}</div>
+                  <div><strong>CLASSE MÉTHODISTE :</strong> {details.classe || request.methode_classe}</div>
                   <div><strong>CONDUCTEUR (TRICE) :</strong> {details.conducteur || request.conducteur}</div>
                   <div><strong>DEMANDEUR :</strong> {details.demandeur || request.demandeur_nom}</div>
                   <div style={{ marginTop: '0.5rem' }}>
@@ -297,7 +297,7 @@ export default function PrintableFormModal({ request, onClose, token }) {
                   <div><strong>GENRE DE L’ENFANT :</strong> {details.sexe_enfant || details.genre_enfant || 'Masculin'}</div>
                   <div><strong>NOM DU PÈRE :</strong> {details.nom_pere}</div>
                   <div><strong>NOM DE LA MÈRE :</strong> {details.nom_mere}</div>
-                  <div><strong>CLASSE METHODISTE :</strong> {details.classe || request.methode_classe}</div>
+                  <div><strong>CLASSE MÉTHODISTE :</strong> {details.classe || request.methode_classe}</div>
                   <div><strong>CONDUCTEUR (TRICE) :</strong> {details.conducteur || request.conducteur}</div>
                 </div>
               )}

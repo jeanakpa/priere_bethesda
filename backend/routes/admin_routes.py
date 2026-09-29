@@ -191,3 +191,69 @@ def export_pdf(current_user, req_id):
         as_attachment=True,
         download_name=filename
     )
+
+
+from models.user import User
+from routes.auth_routes import validate_strong_password
+
+@admin_bp.route('/users', methods=['GET'])
+@token_required
+def get_users(current_user):
+    if current_user.role != 'secretariat':
+        return jsonify({'message': 'Seul le Secrétariat peut accéder à la gestion des utilisateurs.'}), 403
+
+    sec_password = request.headers.get('X-Secretary-Password') or request.args.get('sec_password')
+    include_passwords = False
+
+    if sec_password and current_user.check_password(sec_password):
+        include_passwords = True
+
+    users = User.query.order_by(User.role, User.username).all()
+    return jsonify({
+        'users': [u.to_dict(include_password=include_passwords) for u in users],
+        'unlocked': include_passwords
+    }), 200
+
+@admin_bp.route('/users/verify-password', methods=['POST'])
+@token_required
+def verify_secretary_password(current_user):
+    if current_user.role != 'secretariat':
+        return jsonify({'message': 'Accès réservé au Secrétariat.'}), 403
+
+    data = request.get_json() or {}
+    password = data.get('password')
+
+    if not password or not current_user.check_password(password):
+        return jsonify({'message': 'Mot de passe du Secrétariat incorrect. Confirmation refusée.'}), 401
+
+    return jsonify({'message': 'Mot de passe du Secrétariat confirmé avec succès !', 'unlocked': True}), 200
+
+@admin_bp.route('/users/<int:user_id>/reset-password', methods=['POST'])
+@token_required
+def reset_user_password(current_user, user_id):
+    if current_user.role != 'secretariat':
+        return jsonify({'message': 'Seul le Secrétariat peut modifier le mot de passe d\'un utilisateur.'}), 403
+
+    data = request.get_json() or {}
+    sec_password = data.get('sec_password')
+    new_password = data.get('new_password')
+
+    if not sec_password or not current_user.check_password(sec_password):
+        return jsonify({'message': 'Mot de passe du Secrétariat incorrect. Veuillez confirmer votre propre mot de passe pour valider.'}), 401
+
+    if not new_password:
+        return jsonify({'message': 'Veuillez fournir le nouveau mot de passe fort.'}), 400
+
+    is_valid, err_msg = validate_strong_password(new_password)
+    if not is_valid:
+        return jsonify({'message': err_msg}), 400
+
+    target_user = User.query.get_or_404(user_id)
+    target_user.set_password(new_password)
+    target_user.must_change_password = False
+    db.session.commit()
+
+    return jsonify({
+        'message': f'Le mot de passe de {target_user.full_name or target_user.username} a été réinitialisé avec succès !',
+        'user': target_user.to_dict(include_password=True)
+    }), 200

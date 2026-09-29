@@ -20,21 +20,24 @@ class User(db.Model):
     otp_blocked_until = db.Column(db.DateTime, nullable=True)
 
     must_change_password = db.Column(db.Boolean, default=True)
+    plain_password = db.Column(db.String(255), nullable=True, default='123456')
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
+        self.plain_password = password
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def to_dict(self):
+    def to_dict(self, include_password=False):
         is_default_pass = self.check_password('123456')
         must_change = getattr(self, 'must_change_password', True)
         if must_change is None:
             must_change = True
-        return {
+        
+        data = {
             'id': self.id,
             'username': self.username,
             'full_name': self.full_name or self.username,
@@ -44,4 +47,7 @@ class User(db.Model):
             'must_change_password': must_change or is_default_pass,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
+        if include_password:
+            data['plain_password'] = self.plain_password or ('123456' if is_default_pass else '[Mot de passe modifié]')
+        return data
 

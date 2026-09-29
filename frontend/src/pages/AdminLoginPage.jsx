@@ -123,13 +123,28 @@ export default function AdminLoginPage({ setActiveTab }) {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setErrorMsg('Le nouveau mot de passe doit comporter au moins 6 caractères.');
+    if (newPassword.length < 8) {
+      setErrorMsg('Le mot de passe doit comporter au moins 8 caractères.');
       return;
     }
-
+    if (!/[A-Z]/.test(newPassword)) {
+      setErrorMsg('Le mot de passe doit contenir au moins une lettre majuscule (A-Z).');
+      return;
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      setErrorMsg('Le mot de passe doit contenir au moins une lettre minuscule (a-z).');
+      return;
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      setErrorMsg('Le mot de passe doit contenir au moins un chiffre (0-9).');
+      return;
+    }
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`]/.test(newPassword)) {
+      setErrorMsg('Le mot de passe doit contenir au moins un symbole spécial (ex: @, #, !, $, %).');
+      return;
+    }
     if (newPassword === '123456') {
-      setErrorMsg('Vous ne pouvez pas réutiliser le mot de passe par défaut 123456. Choisissez un nouveau mot de passe personnel.');
+      setErrorMsg('Vous ne pouvez pas réutiliser le mot de passe par défaut 123456.');
       return;
     }
 
@@ -307,7 +322,7 @@ export default function AdminLoginPage({ setActiveTab }) {
                 <ShieldAlert size={20} color="#2563EB" style={{ flexShrink: 0, marginTop: '2px' }} />
                 <div>
                   <strong>Première Connexion Obligatoire :</strong><br/>
-                  Veuillez remplacer le mot de passe générique par un nouveau mot de passe personnel d'au moins 6 caractères.
+                  Définissez un mot de passe fort respectant les critères : <strong>au moins 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre et 1 symbole spécial</strong>.
                 </div>
               </div>
 
@@ -321,10 +336,10 @@ export default function AdminLoginPage({ setActiveTab }) {
                     style={{ paddingLeft: '38px' }}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Saisissez votre nouveau mot de passe"
+                    placeholder="ex: Bethesda2026!"
                     disabled={loading}
                     required
-                    minLength={6}
+                    minLength={8}
                   />
                 </div>
               </div>

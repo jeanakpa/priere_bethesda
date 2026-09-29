@@ -45,7 +45,10 @@ export default function Navbar({ activeTab, setActiveTab }) {
               TEMPLE BÉTHESDA
             </div>
             <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>
-              Yopougon Niangon Sud • Circuit de Niangon
+              Yopougon Niangon Sud
+            </div>
+            <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 500 }}>
+              Circuit de Niangon
             </div>
           </div>
         </div>

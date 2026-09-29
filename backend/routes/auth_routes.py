@@ -120,6 +120,23 @@ def get_current_user(current_user):
     return jsonify({'user': current_user.to_dict()}), 200
 
 
+import re
+
+def validate_strong_password(password):
+    if not password or len(password) < 8:
+        return False, "Le mot de passe doit comporter au moins 8 caractères."
+    if not re.search(r'[A-Z]', password):
+        return False, "Le mot de passe doit contenir au moins une lettre majuscule (A-Z)."
+    if not re.search(r'[a-z]', password):
+        return False, "Le mot de passe doit contenir au moins une lettre minuscule (a-z)."
+    if not re.search(r'[0-9]', password):
+        return False, "Le mot de passe doit contenir au moins un chiffre (0-9)."
+    if not re.search(r'[!@#$%^&*()_+\-=\[\]{};\':"\\|,.<>\/?~`]', password):
+        return False, "Le mot de passe doit contenir au moins un symbole spécial (ex: @, #, !, $, %, *)."
+    if password == '123456':
+        return False, "Vous ne pouvez pas réutiliser le mot de passe par défaut 123456."
+    return True, ""
+
 @auth_bp.route('/change-password', methods=['POST'])
 @token_required
 def change_password(current_user):
@@ -128,16 +145,14 @@ def change_password(current_user):
     confirm_password = data.get('confirm_password')
 
     if not new_password or not confirm_password:
-        return jsonify({'message': 'Veuillez fournir et me confirmer le nouveau mot de passe.'}), 400
+        return jsonify({'message': 'Veuillez fournir et confirmer le nouveau mot de passe.'}), 400
 
     if new_password != confirm_password:
-        return jsonify({'message': 'Les mots de passe ne correspondent pas.'}), 400
+        return jsonify({'message': 'Les deux mots de passe ne correspondent pas.'}), 400
 
-    if len(new_password) < 6:
-        return jsonify({'message': 'Le nouveau mot de passe doit comporter au moins 6 caractères.'}), 400
-
-    if new_password == '123456':
-        return jsonify({'message': 'Vous ne pouvez pas réutiliser le mot de passe par défaut 123456.'}), 400
+    is_valid, err_msg = validate_strong_password(new_password)
+    if not is_valid:
+        return jsonify({'message': err_msg}), 400
 
     current_user.set_password(new_password)
     current_user.must_change_password = False
