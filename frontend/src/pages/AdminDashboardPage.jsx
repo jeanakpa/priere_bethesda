@@ -55,6 +55,8 @@ export default function AdminDashboardPage() {
   // Toggle reveal password for specific user ID
   const [revealedUsersMap, setRevealedUsersMap] = useState({});
 
+  const [fetchError, setFetchError] = useState('');
+
   useEffect(() => {
     fetchStats();
     fetchRequests();
@@ -86,6 +88,7 @@ export default function AdminDashboardPage() {
 
   const fetchRequests = async () => {
     setLoading(true);
+    setFetchError('');
     let url = new URL(`${API_BASE_URL}/api/admin/requests`);
     if (formTypeFilter) url.searchParams.append('form_type', formTypeFilter);
     if (classFilter) url.searchParams.append('methode_classe', classFilter);
@@ -101,12 +104,18 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       setLoading(false);
       if (res.ok) {
-        setRequests(data.requests);
-        setTotal(data.total);
+        setRequests(data.requests || []);
+        setTotal(data.total || 0);
+      } else {
+        if (res.status === 401) {
+          logout();
+        } else {
+          setFetchError(data.message || "Impossible de récupérer les fiches.");
+        }
       }
     } catch (err) {
       setLoading(false);
-      console.error("Erreur chargement fiches:", err);
+      setFetchError("Connexion au serveur backend interrompue ou serveur en démarrage. Veuillez cliquer sur 'Actualiser'.");
     }
   };
 
@@ -317,27 +326,13 @@ export default function AdminDashboardPage() {
 
       {/* Tabs Header for Secretariat */}
       {user?.role === 'secretariat' && (
-        <div style={{
-          display: 'flex',
-          gap: '0.75rem',
-          borderBottom: '2px solid #E2E8F0',
-          marginBottom: '2rem',
-          paddingBottom: '0.25rem'
-        }}>
+        <div className="admin-tabs-container">
           <button
             onClick={() => setActiveAdminTab('fiches')}
+            className="admin-tab-btn"
             style={{
-              padding: '0.75rem 1.25rem',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              border: 'none',
               borderBottom: activeAdminTab === 'fiches' ? '3px solid #107C41' : '3px solid transparent',
-              backgroundColor: 'transparent',
-              color: activeAdminTab === 'fiches' ? '#107C41' : '#64748B',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
+              color: activeAdminTab === 'fiches' ? '#107C41' : '#64748B'
             }}
           >
             <FileText size={18} /> Répertoire des Fiches
@@ -345,18 +340,10 @@ export default function AdminDashboardPage() {
 
           <button
             onClick={() => setActiveAdminTab('users')}
+            className="admin-tab-btn"
             style={{
-              padding: '0.75rem 1.25rem',
-              fontWeight: 700,
-              fontSize: '0.95rem',
-              border: 'none',
               borderBottom: activeAdminTab === 'users' ? '3px solid #107C41' : '3px solid transparent',
-              backgroundColor: 'transparent',
-              color: activeAdminTab === 'users' ? '#107C41' : '#64748B',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
+              color: activeAdminTab === 'users' ? '#107C41' : '#64748B'
             }}
           >
             <Users size={18} /> Gestion des Utilisateurs & Mots de Passe
@@ -500,8 +487,8 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Search Bar */}
-            <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '0.75rem' }}>
-              <div style={{ position: 'relative', flex: 1 }}>
+            <form onSubmit={handleSearchSubmit} className="admin-search-form">
+              <div style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
                 <Search size={18} color="#64748B" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                 <input 
                   type="text" 
@@ -512,13 +499,13 @@ export default function AdminDashboardPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <button type="submit" className="btn-primary" style={{ padding: '0.6rem 1.25rem' }}>
+              <button type="submit" className="btn-primary btn-nowrap" style={{ padding: '0.6rem 1.25rem' }}>
                 Rechercher
               </button>
               {(formTypeFilter || classFilter || statusFilter || searchQuery || receptionStart || receptionEnd) && (
                 <button 
                   type="button" 
-                  className="btn-secondary" 
+                  className="btn-secondary btn-nowrap" 
                   onClick={() => {
                     setFormTypeFilter(''); setClassFilter(''); setStatusFilter(''); setSearchQuery(''); setReceptionStart(''); setReceptionEnd('');
                   }}
@@ -532,14 +519,23 @@ export default function AdminDashboardPage() {
 
           {/* Requests Directory Table */}
           <div className="card" style={{ padding: '1.5rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.1rem', color: '#0F172A' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#0F172A', whiteSpace: 'nowrap' }}>
                 Répertoire des Fiches ({total})
               </h3>
-              <button onClick={fetchRequests} className="btn-secondary" style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}>
-                <RefreshCw size={14} /> Actualiser
+              <button onClick={fetchRequests} className="btn-secondary btn-nowrap" style={{ padding: '0.4rem 0.85rem', fontSize: '0.82rem' }}>
+                <RefreshCw size={14} style={{ marginRight: '4px' }} /> Actualiser
               </button>
             </div>
+
+            {fetchError && (
+              <div style={{ backgroundColor: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '1rem', borderRadius: '10px', marginBottom: '1.25rem', fontSize: '0.88rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span>⚠️ {fetchError}</span>
+                <button onClick={fetchRequests} className="btn-primary" style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}>
+                  Réessayer
+                </button>
+              </div>
+            )}
 
             {loading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>Chargement du répertoire...</div>

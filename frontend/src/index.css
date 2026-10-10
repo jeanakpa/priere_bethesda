@@ -256,6 +256,56 @@ input, select, textarea {
   word-break: normal !important;
 }
 
+/* Responsive Mobile Helpers for Admin Dashboard */
+.admin-tabs-container {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #E2E8F0;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-tab-btn {
+  padding: 0.75rem 1.25rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+}
+
+.admin-search-form {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn-nowrap {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+@media (max-width: 640px) {
+  .admin-search-form {
+    flex-direction: column !important;
+  }
+  .admin-search-form button {
+    width: 100% !important;
+  }
+  .admin-tab-btn {
+    font-size: 0.85rem !important;
+    padding: 0.6rem 0.85rem !important;
+  }
+}
+
 
 /* Print Specific Rules (@media print) */
 @media print {
