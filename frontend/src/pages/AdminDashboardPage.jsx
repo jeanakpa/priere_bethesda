@@ -14,6 +14,10 @@ export default function AdminDashboardPage() {
   // Dashboard Tabs: 'fiches' | 'users'
   const [activeAdminTab, setActiveAdminTab] = useState('fiches');
 
+  // Server wakeup state (Render free plan hibernates)
+  const [serverWaking, setServerWaking] = useState(false);
+  const [serverReady, setServerReady] = useState(false);
+
   // Stats & Requests State
   const [stats, setStats] = useState(null);
   const [requests, setRequests] = useState([]);
@@ -57,6 +61,47 @@ export default function AdminDashboardPage() {
 
   const [fetchError, setFetchError] = useState('');
 
+  // Wake up Render backend on page load (free plan hibernates after 15min)
+  const wakeupBackend = async () => {
+    try {
+      setServerWaking(true);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      const res = await fetch(`${API_BASE_URL}/api/health`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (res.ok) setServerReady(true);
+    } catch (err) {
+      // Server still waking, requests will retry automatically
+    } finally {
+      setServerWaking(false);
+    }
+  };
+
+  // Retry a fetch with automatic server wakeup on network failure
+  const fetchWithRetry = async (url, options = {}, maxRetries = 3) => {
+    let lastErr;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 25000);
+        const res = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timeout);
+        return res;
+      } catch (err) {
+        lastErr = err;
+        if (attempt < maxRetries) {
+          // Wait before retry: 2s, 4s...
+          await new Promise(r => setTimeout(r, attempt * 2000));
+        }
+      }
+    }
+    throw lastErr;
+  };
+
+  useEffect(() => {
+    wakeupBackend();
+  }, []);
+
   useEffect(() => {
     fetchStats();
     fetchRequests();
@@ -74,7 +119,7 @@ export default function AdminDashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/stats`, {
+      const res = await fetchWithRetry(`${API_BASE_URL}/api/admin/stats`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -98,7 +143,7 @@ export default function AdminDashboardPage() {
     if (receptionEnd) url.searchParams.append('reception_end', receptionEnd);
 
     try {
-      const res = await fetch(url.toString(), {
+      const res = await fetchWithRetry(url.toString(), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -115,7 +160,7 @@ export default function AdminDashboardPage() {
       }
     } catch (err) {
       setLoading(false);
-      setFetchError("Connexion au serveur backend interrompue ou serveur en démarrage. Veuillez cliquer sur 'Actualiser'.");
+      setFetchError("Le serveur backend est en cours de démarrage (peut prendre 30-60s sur Render). Cliquez sur 'Actualiser' dans un instant.");
     }
   };
 
@@ -144,14 +189,14 @@ export default function AdminDashboardPage() {
     setGateLoading(true);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/users/verify-password`, {
+      const res = await fetchWithRetry(`${API_BASE_URL}/api/admin/users/verify-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ password: gatePasswordInput })
-      });
+      }, 3);
       const data = await res.json();
       setGateLoading(false);
 
@@ -160,12 +205,16 @@ export default function AdminDashboardPage() {
         setUnlockedUsers(true);
         setGateModalOpen(false);
         fetchUsers(gatePasswordInput);
+      } else if (res.status === 401) {
+        setGateError("Mot de passe du Secrétariat incorrect. Veuillez réessayer.");
+      } else if (res.status === 403) {
+        setGateError("Accès refusé : rôle Secrétariat requis.");
       } else {
         setGateError(data.message || "Mot de passe du Secrétariat incorrect.");
       }
     } catch (err) {
       setGateLoading(false);
-      setGateError("Impossible de contacter le serveur backend.");
+      setGateError("⏳ Le serveur est en cours de démarrage (Render plan gratuit). Patientez 30-60 secondes puis réessayez.");
     }
   };
 
@@ -323,6 +372,30 @@ export default function AdminDashboardPage() {
           Déconnexion
         </button>
       </div>
+
+      {/* Server Wakeup Banner (Render free plan) */}
+      {serverWaking && (
+        <div style={{
+          backgroundColor: '#FEF9C3',
+          border: '1px solid #FDE047',
+          borderRadius: '10px',
+          padding: '0.85rem 1.25rem',
+          marginBottom: '1.25rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          fontSize: '0.88rem',
+          color: '#92400E',
+          fontWeight: 600
+        }}>
+          <span style={{ fontSize: '1.2rem' }}>⏳</span>
+          <div>
+            <strong>Serveur en cours de démarrage...</strong>
+            <br/>
+            <span style={{ fontWeight: 400 }}>Le serveur Render se réveille (peut prendre 30-60 secondes). Les données se chargeront automatiquement.</span>
+          </div>
+        </div>
+      )}
 
       {/* Tabs Header for Secretariat */}
       {user?.role === 'secretariat' && (
