@@ -4,7 +4,7 @@ export const API_BASE_URL = rawEnvUrl
   ? (rawEnvUrl.startsWith('http://') || rawEnvUrl.startsWith('https://') ? rawEnvUrl : `https://${rawEnvUrl}`)
   : `http://${window.location.hostname}:5050`;
 
-// Liste officielle des 28 Classes Méthodistes et des Organisations du Temple Bethesda
+// Liste officielle des Classes Méthodistes et des Organisations / Structures du Temple Bethesda
 export const METHODIST_CLASSES = [
   { name: "BÉTHANIE", conductor: "ASSEKE MARC" },
   { name: "BÉTHEL", conductor: "GRAH ADJO ROSE" },
@@ -38,5 +38,9 @@ export const METHODIST_CLASSES = [
   { name: "UNION DES FEMMES", conductor: "QUANSAH RAISSA" },
   { name: "JEUNESSE", conductor: "N’KPOMAN SANDRINE" },
   { name: "ECODIM", conductor: "KPEYA JEPHTE" },
+  { name: "CHORALE", conductor: "RESPONSABLE CHORALE" },
+  { name: "ORGANISATION DES PRÉDICATEURS", conductor: "RESPONSABLE PRÉDICATEURS" },
+  { name: "ORGANISATION DES MONITEURS", conductor: "RESPONSABLE MONITEURS" },
   { name: "Autre / Visiteur", conductor: "" }
 ];
+

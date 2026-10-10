@@ -293,7 +293,7 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="animate-fade-in" style={{ width: '100%', padding: '2rem 2rem 5rem 2rem' }}>
+    <div className="animate-fade-in admin-page-container" style={{ width: '100%' }}>
       
       {/* Header Banner */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -546,50 +546,50 @@ export default function AdminDashboardPage() {
             ) : requests.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>Aucune fiche trouvée avec les critères sélectionnés.</div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <div className="table-responsive">
+                <table style={{ width: '100%', minWidth: '680px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
-                      <th style={{ padding: '0.85rem' }}>Code Unique</th>
-                      <th style={{ padding: '0.85rem' }}>Type Fiche</th>
-                      <th style={{ padding: '0.85rem' }}>Classe Méthodiste</th>
-                      <th style={{ padding: '0.85rem' }}>Demandeur / Sujet</th>
-                      <th style={{ padding: '0.85rem' }}>Date Événement</th>
-                      <th style={{ padding: '0.85rem' }}>Statut</th>
-                      <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Code</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Type Fiche</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Classe / Structure</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Demandeur / Sujet</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Date Évén.</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Statut</th>
+                      <th style={{ padding: '0.75rem 0.6rem', textAlign: 'right', whiteSpace: 'nowrap' }}>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {requests.map((req) => (
                       <tr key={req.id} style={{ borderBottom: '1px solid #E2E8F0' }}>
                         
-                        <td style={{ padding: '0.85rem', fontWeight: 700, color: '#107C41' }}>
+                        <td style={{ padding: '0.75rem 0.6rem', fontWeight: 700, color: '#107C41', whiteSpace: 'nowrap' }}>
                           {req.tracking_code}
                         </td>
                         
-                        <td style={{ padding: '0.85rem' }}>
+                        <td style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>
                           {getFormTitle(req.form_type)}
                         </td>
 
-                        <td style={{ padding: '0.85rem' }}>
+                        <td style={{ padding: '0.75rem 0.6rem' }}>
                           <span style={{ fontWeight: 600 }}>{req.methode_classe || 'Non spécifiée'}</span><br/>
                           <small style={{ color: '#64748B' }}>{req.conducteur || ''}</small>
                         </td>
 
-                        <td style={{ padding: '0.85rem' }}>
+                        <td style={{ padding: '0.75rem 0.6rem' }}>
                           <span style={{ fontWeight: 600, color: '#0F172A' }}>{req.demandeur_nom}</span>
                           {req.details?.sujet && (
-                            <div style={{ fontSize: '0.8rem', color: '#64748B', maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.8rem', color: '#64748B', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {req.details.sujet}
                             </div>
                           )}
                         </td>
 
-                        <td style={{ padding: '0.85rem' }}>
+                        <td style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>
                           {req.event_date || 'N/A'}
                         </td>
 
-                        <td style={{ padding: '0.85rem' }}>
+                        <td style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>
                           <span className={`badge ${
                             req.status === 'Validé' ? 'badge-success' : 
                             req.status === 'Nouveau' ? 'badge-warning' : 'badge-info'
@@ -598,7 +598,7 @@ export default function AdminDashboardPage() {
                           </span>
                         </td>
 
-                        <td style={{ padding: '0.85rem', textAlign: 'right' }}>
+                        <td style={{ padding: '0.75rem 0.6rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
                             
                             {/* View / Print Preview Modal Trigger */}
@@ -676,17 +676,17 @@ export default function AdminDashboardPage() {
             {usersLoading ? (
               <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>Chargement des utilisateurs...</div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+              <div className="table-responsive">
+                <table style={{ width: '100%', minWidth: '720px', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.88rem' }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid #E2E8F0', backgroundColor: '#F8FAFC' }}>
-                      <th style={{ padding: '0.85rem' }}>Identifiant (`username`)</th>
-                      <th style={{ padding: '0.85rem' }}>Nom Complet</th>
-                      <th style={{ padding: '0.85rem' }}>Rôle</th>
-                      <th style={{ padding: '0.85rem' }}>Classe Méthodiste</th>
-                      <th style={{ padding: '0.85rem' }}>Statut Première Connexion</th>
-                      <th style={{ padding: '0.85rem' }}>Mot de Passe Actuel</th>
-                      <th style={{ padding: '0.85rem', textAlign: 'right' }}>Action</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Identifiant</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Nom Complet</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Rôle</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Classe / Structure</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Statut Connexion</th>
+                      <th style={{ padding: '0.75rem 0.6rem', whiteSpace: 'nowrap' }}>Mot de Passe</th>
+                      <th style={{ padding: '0.75rem 0.6rem', textAlign: 'right', whiteSpace: 'nowrap' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>

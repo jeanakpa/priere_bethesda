@@ -231,7 +231,31 @@ input, select, textarea {
   .printable-banner-title {
     font-size: 1.1rem !important;
   }
+
+  .admin-page-container {
+    padding: 1rem 0.5rem 3rem 0.5rem !important;
+  }
 }
+
+/* Responsive Table Container & Headers styling for mobile */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  width: 100%;
+  min-width: 680px;
+  border-collapse: collapse;
+}
+
+.table-responsive th,
+.table-responsive td {
+  white-space: nowrap !important;
+  word-break: normal !important;
+}
+
 
 /* Print Specific Rules (@media print) */
 @media print {

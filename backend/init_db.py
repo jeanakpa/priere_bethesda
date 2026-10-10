@@ -131,7 +131,10 @@ def init_tables_and_seed():
             ("petekall", "Pete Kall", "UNION DES HOMMES"),
             ("quansahraissa", "Quansah Raïssa", "UNION DES FEMMES"),
             ("nkpomansandrine", "N’kpoman Sandrine", "JEUNESSE"),
-            ("kpeyajephte", "Kpeya Jephté", "ECODIM")
+            ("kpeyajephte", "Kpeya Jephté", "ECODIM"),
+            ("chorale", "Responsable Chorale", "CHORALE"),
+            ("predicateurs", "Responsable Prédicateurs", "ORGANISATION DES PRÉDICATEURS"),
+            ("moniteurs", "Responsable Moniteurs", "ORGANISATION DES MONITEURS")
         ]
 
         for u_name, f_name, c_name in conducteurs_list:
