@@ -93,7 +93,7 @@ export default function AdminLoginPage({ setActiveTab }) {
           setTempToken(data.token);
           setTempUser(data.user);
           setStep('change_password');
-          setSuccessMsg('Première connexion détectée : Veuillez choisir votre nouveau mot de passe personnel.');
+          setSuccessMsg('Première connexion : Veuillez choisir votre nouveau mot de passe personnel.');
         } else {
           // Normal login
           login(data.token, data.user);
@@ -319,11 +319,6 @@ export default function AdminLoginPage({ setActiveTab }) {
                 alignItems: 'flex-start',
                 gap: '0.5rem'
               }}>
-                <ShieldAlert size={20} color="#2563EB" style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div>
-                  <strong>Première Connexion Obligatoire :</strong><br/>
-                  Définissez un mot de passe fort respectant les critères : <strong>au moins 8 caractères, 1 majuscule, 1 minuscule, 1 chiffre et 1 symbole spécial</strong>.
-                </div>
               </div>
 
               <div className="form-group">
@@ -368,7 +363,7 @@ export default function AdminLoginPage({ setActiveTab }) {
                 disabled={loading}
                 style={{ width: '100%', justifyContent: 'center', marginTop: '1.5rem', padding: '0.85rem' }}
               >
-                {loading ? "Enregistrement en cours..." : "Enregistrer et accéder au tableau de bord"}
+                {loading ? "Enregistrement en cours..." : "Confirmer"}
               </button>
 
             </form>

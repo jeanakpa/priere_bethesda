@@ -79,7 +79,6 @@ def init_tables_and_seed():
         else:
             sec.role = 'secretariat'
             sec.phone_number = TARGET_PHONE
-            sec.set_password(DEFAULT_PASS)
 
         # 2. Seed Président des Conducteurs (assekemarc)
         pres = User.query.filter_by(username='assekemarc').first()
@@ -97,7 +96,6 @@ def init_tables_and_seed():
         else:
             pres.role = 'president_conducteur'
             pres.phone_number = TARGET_PHONE
-            pres.set_password(DEFAULT_PASS)
 
         # 3. Seed Conducteurs for all classes
         conducteurs_list = [
@@ -150,8 +148,8 @@ def init_tables_and_seed():
                 cond.set_password(DEFAULT_PASS)
                 db.session.add(cond)
             else:
-                cond.set_password(DEFAULT_PASS)
                 cond.phone_number = TARGET_PHONE
+                cond.methode_classe = c_name
 
         db.session.commit()
         print("Comptes utilisateurs initialisés avec succès !")
